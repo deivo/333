@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONP 跨域</title>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script>
+        function jsonp({
+            url,
+            params,
+            cb
+        }) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                window[cb] = function (data) {
+                    resolve(data);
+                    document.body.removeChild(script);
+                }
+                params = {
+                    ...params,
+                    cb
+                };
+                let arrs = [];
+                for (let key in params) {
+                    arrs.push(`${key}=${params[key]}`);
+                }
+                script.src = `${url}?${arrs.join('&')}`;
+                document.body.appendChild(script);
+            })
+        }
+        jsonp({
+            url: 'http://localhost:3000/say',
+            params: {
+                wd: '我爱你'
+            },
+            cb: 'show'
+        }).then(data => {
+            app.innerHTML = JSON.stringify(data);
+        })
+        /**
+         * 缺点：
+         * 1. 只能支持 get 请求，不支持 post put delete
+         * 2. 不安全 xss 攻击
+         */
+    </script>
+</body>
+
+</html>

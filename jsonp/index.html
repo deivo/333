@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONP 跨域</title>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script>
+        const params = {};
+        let str =
+            'pre=1&p=3&ie=utf-8&json=1&prod=pc&from=pc_web&sugsid=33815,33261,33273,31253,33691,33675,33713,26350,22157&wd=123&req=2&csor=3&pwd=12&cb=jQuery110206222177725636908_1618111894237&_=1618111894240'
+        str.replace(/([^?&=]+)=([^?&=]+)/g, function (...args) {
+            params[args[1]] = args[2];
+        })
+
+        function jsonp({
+            url,
+            params,
+            cb
+        }) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                window[cb] = function (data) {
+                    resolve(data);
+                    document.body.removeChild(script);
+                }
+                params = {
+                    ...params,
+                    cb
+                };
+                let arrs = [];
+                for (let key in params) {
+                    arrs.push(`${key}=${params[key]}`);
+                }
+                script.src = `${url}?${arrs.join('&')}`;
+                document.body.appendChild(script);
+            })
+        }
+        jsonp({
+            url: 'https://www.baidu.com/sugrec',
+            params: params,
+            cb: 'jQuery110206222177725636908_1618111894237'
+        }).then(data => {
+            app.innerHTML = JSON.stringify(data);
+        })
+        /**
+         * 缺点：
+         * 1. 只能支持 get 请求，不支持 post put delete
+         * 2. 不安全 xss 攻击
+        */
+    </script>
+</body>
+
+</html>
